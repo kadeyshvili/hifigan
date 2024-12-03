@@ -56,9 +56,6 @@ class Trainer(BaseTrainer):
         msd_disc_loss = self.criterion.discriminator_loss(msd_gt_out, msd_fake_out)
         disc_loss = mpd_disc_loss + msd_disc_loss
 
-        batch["mpd_disc_loss"] = mpd_disc_loss
-        batch["msd_disc_loss"] = msd_disc_loss
-        batch["disc_loss"] = disc_loss
 
         if self.is_train:
             self._clip_grad_norm(self.model.mpd)
@@ -89,11 +86,13 @@ class Trainer(BaseTrainer):
 
         if self.is_train:
             self._clip_grad_norm(self.model.generator)
-
-        if self.is_train:
             gen_loss.backward()
             self.gen_optimizer.step()
 
+
+        batch["mpd_disc_loss"] = mpd_disc_loss
+        batch["msd_disc_loss"] = msd_disc_loss
+        batch["disc_loss"] = disc_loss
         batch["mpd_gen_loss"] = mpd_gen_loss
         batch["msd_gen_loss"] = msd_gen_loss
         batch["mel_spec_loss"] = mel_spec_loss

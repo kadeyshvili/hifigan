@@ -8,7 +8,7 @@ class ResBlock(nn.Module):
     def __init__(self, channels, kernel_size, dilations):
         super().__init__()
         norm = nn.utils.parametrizations.weight_norm
-        self.blocks = [nn.ModuleList([None for _ in range(len(dilations[0]))]) for _ in range(len(dilations))]
+        self.blocks = nn.ModuleList(nn.ModuleList([None for _ in range(len(dilations[0]))]) for _ in range(len(dilations)))
         for i in range(len(dilations)):
             for j in range(len(dilations[0])):
                 self.blocks[i][j] = nn.Sequential(nn.LeakyReLU(0.1), norm(nn.Conv1d(in_channels=channels, out_channels=channels, \
