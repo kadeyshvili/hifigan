@@ -1,0 +1,8 @@
+train:
+  _target_: src.datasets.HiFiGanDataset
+  data_path: LJSpeech-1.1/wavs
+  limit: 200
+val:
+  _target_: src.datasets.HiFiGanDataset
+  data_path: LJSpeech-1.1/wavs
+  limit: 200
