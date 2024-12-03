@@ -8,7 +8,7 @@ from src.metrics.utils import Wav2Vec2MOS
 class MosMetric(BaseMetric):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        path = 'hifi-gan/wmos_pretrained/wv_mos.ckpt'
+        path = 'wmos_pretrained/wv_mos.ckpt'
 
         if (not os.path.exists(path)):
             print("Downloading the checkpoint for WV-MOS")
