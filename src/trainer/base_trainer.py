@@ -231,8 +231,6 @@ class BaseTrainer:
             self.train_metrics.update("generator_grad_norm", self._get_grad_norm(self.model.generator.parameters()))
             self.train_metrics.update("discriminator_grad_norm", self._get_grad_norm(itertools.chain(self.model.mpd.parameters(),\
                                                                                                       self.model.msd.parameters())))
-            self.gen_lr_scheduler.step()
-            self.disc_lr_scheduler.step()
 
             # log current results
             if batch_idx % self.log_step == 0:
@@ -256,6 +254,8 @@ class BaseTrainer:
                 self.train_metrics.reset()
             if batch_idx + 1 >= self.epoch_len:
                 break
+        self.gen_lr_scheduler.step()
+        self.disc_lr_scheduler.step()
 
         logs = last_train_metrics
 
