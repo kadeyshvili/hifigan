@@ -6,6 +6,7 @@ import torch
 from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
+import torch.nn.functional as F
 
 
 
@@ -43,6 +44,8 @@ class Trainer(BaseTrainer):
         initial_wav = batch['wav']
         initial_melspec = batch['melspec']
         wav_fake = self.model.generator(initial_melspec)
+        if initial_wav.shape != wav_fake.shape:
+            wav_fake = torch.stack([F.pad(wav, (0, initial_wav.shape[2] - wav_fake.shape[2]), value=0) for wav in wav_fake])
         batch["generated_wav"] = wav_fake
         mel_spec_fake = self.create_mel_spec(wav_fake).squeeze(1)
         if self.is_train:

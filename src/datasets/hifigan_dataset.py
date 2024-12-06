@@ -15,6 +15,7 @@ class HiFiGanDataset(Dataset):
         self.max_len = max_len
         for file_path in tqdm((data_path).iterdir(), desc='Loading files'):
             wav, _ = torchaudio.load(file_path)
+            wav = wav[0:1, :]
             path = file_path
             self.wavs_and_paths.append({'wav' : wav, 'path' : path})
         if limit is not None:

@@ -1,8 +1,10 @@
 train:
   _target_: src.datasets.HiFiGanDataset
   data_path: LJSpeech-1.1/wavs
-  limit: null
+  limit: 16
+  max_len: null
 val:
   _target_: src.datasets.HiFiGanDataset
-  data_path: LJSpeech-1.1/wavs
-  limit: null
+  data_path: custom_data/wavs
+  limit: 1
+  max_len: null
