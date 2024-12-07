@@ -44,6 +44,7 @@ class Trainer(BaseTrainer):
         initial_wav = batch['wav']
         initial_melspec = batch['melspec']
         wav_fake = self.model.generator(initial_melspec)
+ 
         if initial_wav.shape != wav_fake.shape:
             wav_fake = torch.stack([F.pad(wav, (0, initial_wav.shape[2] - wav_fake.shape[2]), value=0) for wav in wav_fake])
         batch["generated_wav"] = wav_fake
@@ -109,8 +110,9 @@ class Trainer(BaseTrainer):
         for loss_name in self.config.writer.loss_names:
             metrics.update(loss_name, batch[loss_name].item())
 
-        for met in metric_funcs:
-            metrics.update(met.name, met(**batch))
+        if not self.is_train:
+            for i in range(len(self.metrics["inference"])):
+                self.metrics["inference"][i](batch['generated_wav'], batch['initial_len'])
         return batch
 
     def _log_batch(self, batch_idx, batch, mode="train"):
@@ -141,8 +143,9 @@ class Trainer(BaseTrainer):
 
 
     def log_audio(self, wav, generated_wav, **batch):
-        self.writer.add_audio("initial_wav", wav[0], 22050)
-        self.writer.add_audio("generated_wav", generated_wav[0], 22050)
+        init_len = batch['initial_len'][0]
+        self.writer.add_audio("initial_wav", wav[0][:, :init_len], 22050)
+        self.writer.add_audio("generated_wav", generated_wav[0][:, :init_len], 22050)
 
     def log_spectrogram(self, melspec, **batch):
         spectrogram_for_plot = melspec[0].detach().cpu()
@@ -150,15 +153,13 @@ class Trainer(BaseTrainer):
         self.writer.add_image("melspectrogram", image)
 
     def log_predictions(self, examples_to_log=10, **batch):
-        # Note: by improving text encoder and metrics design
-        # this logging can also be improved significantly
         all_wavs_generated = batch['generated_wav']
         paths = batch['path']
+        initial_lengths = batch['initial_len']
         rows = {}
-        tuples = list(zip(all_wavs_generated, paths))
-        for generated_wav, path in tuples[:examples_to_log]:
-            mos = self.calc_mos.model.calculate_one(generated_wav)
-
+        tuples = list(zip(all_wavs_generated, paths, initial_lengths))
+        for generated_wav, path, init_len in tuples[:examples_to_log]:
+            mos = self.calc_mos.model.calculate_one(generated_wav[:, :init_len])
             rows[Path(path).name] = {"MOS": mos}
             
 

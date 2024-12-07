@@ -10,6 +10,8 @@ from src.metrics.tracker import MetricTracker
 from src.utils.io_utils import ROOT_PATH
 from src.model.melspec import MelSpectrogramConfig, MelSpectrogram
 from src.metrics.calculate_mos import MosMetric
+import pandas as pd
+import numpy as np
 
 
 class BaseTrainer:
@@ -208,7 +210,9 @@ class BaseTrainer:
                 this epoch.
         """
         self.is_train = True
-        self.model.train()
+        self.model.generator.train()
+        self.model.msd.train()
+        self.model.mpd.train()
         self.train_metrics.reset()
         self.writer.set_step((epoch - 1) * self.epoch_len)
         self.writer.add_scalar("epoch", epoch)
@@ -278,7 +282,9 @@ class BaseTrainer:
             logs (dict): logs that contain the information about evaluation.
         """
         self.is_train = False
-        self.model.eval()
+        self.model.generator.eval()
+        self.model.mpd.eval()
+        self.model.msd.eval()
         self.evaluation_metrics.reset()
         with torch.no_grad():
             for batch_idx, batch in tqdm(
@@ -291,10 +297,16 @@ class BaseTrainer:
                     metrics=self.evaluation_metrics,
                 )
             self.writer.set_step(epoch * self.epoch_len, part)
-            self._log_scalars(self.evaluation_metrics)
             self._log_batch(
                 batch_idx, batch, part
             )  # log only the last batch during inference
+        for i in range(len(self.metrics['inference'])):
+            self.evaluation_metrics.update(self.metrics['inference'][i].name, np.mean(self.metrics['inference'][i].mos))
+            self.metrics['inference'][i].mos = []
+
+        self._log_scalars(self.evaluation_metrics)
+        
+        
 
         return self.evaluation_metrics.result()
 

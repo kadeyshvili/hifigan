@@ -42,8 +42,9 @@ class Wav2Vec2MOS(nn.Module):
                 
         
     def calculate_one(self, wav_file):
-        wav_file = wav_file.squeeze(0)
-        x = torchaudio.functional.resample(wav_file, 22050, 16000)
+        wav_file_new = torch.clone(wav_file)
+        wav_file_new = wav_file_new.squeeze(0)
+        x = torchaudio.functional.resample(wav_file_new, 22050, 16000)
         x = self.processor(x, return_tensors="pt", padding=True, sampling_rate=16000).input_values
         with torch.no_grad():
             res = self.forward(x).mean()

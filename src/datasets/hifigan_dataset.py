@@ -3,18 +3,21 @@ from torch.utils.data import Dataset
 import torchaudio
 import random
 from tqdm import tqdm
+from src.datasets.base_dataset import BaseDataset
 
 from src.model.melspec import MelSpectrogramConfig, MelSpectrogram
 
 
-class HiFiGanDataset(Dataset):
+class HiFiGanDataset(BaseDataset):
     def __init__(self, data_path, limit=None, max_len=22528, **kwargs):
         data_path = Path(data_path)
         self.mel_creator = MelSpectrogram(MelSpectrogramConfig())
         self.wavs_and_paths = []
         self.max_len = max_len
         for file_path in tqdm((data_path).iterdir(), desc='Loading files'):
-            wav, _ = torchaudio.load(file_path)
+            wav, sr = torchaudio.load(file_path)
+            if sr != 22050:
+                wav = torchaudio.functional.resample(wav, sr, 22050)
             wav = wav[0:1, :]
             path = file_path
             self.wavs_and_paths.append({'wav' : wav, 'path' : path})

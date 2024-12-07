@@ -21,11 +21,10 @@ class MosMetric(BaseMetric):
 
 
         self.model = Wav2Vec2MOS(path)
+        self.mos = []
 
-    def __call__(self, generated_wav, **kwargs):
-        mos = 0
-        for audio in generated_wav:
-            mos += self.model.calculate_one(audio)
-
-        return mos / len(generated_wav)
+    def __call__(self, generated_wavs,initial_lens, **kwargs):
+        tuples = list(zip(generated_wavs, initial_lens))
+        for audio, true_len in tuples:
+            self.mos.append(self.model.calculate_one(audio[:, :true_len]))
 
