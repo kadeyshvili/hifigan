@@ -16,3 +16,4 @@ pytorch_lightning
 black
 isort
 pre-commit
+speechbrain

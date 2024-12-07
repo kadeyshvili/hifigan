@@ -160,7 +160,10 @@ class Trainer(BaseTrainer):
         tuples = list(zip(all_wavs_generated, paths, initial_lengths))
         for generated_wav, path, init_len in tuples[:examples_to_log]:
             mos = self.calc_mos.model.calculate_one(generated_wav[:, :init_len])
-            rows[Path(path).name] = {"MOS": mos}
+            rows[Path(path).name] = {
+                "MOS": mos,
+                "generated_wav" : self.writer.wandb.Audio(generated_wav.detach().cpu().numpy().T, sample_rate=22050)
+            }
             
 
         self.writer.add_table(
