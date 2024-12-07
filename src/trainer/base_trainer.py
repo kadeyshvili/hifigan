@@ -286,6 +286,7 @@ class BaseTrainer:
         self.model.mpd.eval()
         self.model.msd.eval()
         self.evaluation_metrics.reset()
+        self.writer.mode = part
         with torch.no_grad():
             for batch_idx, batch in tqdm(
                 enumerate(dataloader),
@@ -296,10 +297,15 @@ class BaseTrainer:
                     batch,
                     metrics=self.evaluation_metrics,
                 )
+                if self.config.dataloader['val'].batch_size == 1:
+                    self._log_batch(
+                        batch_idx, batch, part
+                    )
             self.writer.set_step(epoch * self.epoch_len, part)
-            self._log_batch(
-                batch_idx, batch, part
-            )  # log only the last batch during inference
+            if self.config.dataloader['val'].batch_size != 1:
+                self._log_batch(
+                    batch_idx, batch, part
+                )  # log only the last batch during inference
         for i in range(len(self.metrics['inference'])):
             self.evaluation_metrics.update(self.metrics['inference'][i].name, np.mean(self.metrics['inference'][i].mos))
             self.metrics['inference'][i].mos = []

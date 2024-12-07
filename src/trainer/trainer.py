@@ -49,6 +49,7 @@ class Trainer(BaseTrainer):
             wav_fake = torch.stack([F.pad(wav, (0, initial_wav.shape[2] - wav_fake.shape[2]), value=0) for wav in wav_fake])
         batch["generated_wav"] = wav_fake
         mel_spec_fake = self.create_mel_spec(wav_fake).squeeze(1)
+        batch['mel_spec_fake'] = mel_spec_fake
         if self.is_train:
             self.disc_optimizer.zero_grad()
 
@@ -132,25 +133,40 @@ class Trainer(BaseTrainer):
 
         # logging scheme might be different for different partitions
         if mode == "train":  # the method is called only every self.log_step steps
-            self.log_spectrogram(**batch)
-            self.log_audio(**batch)
+            self.log_spectrogram(partition='train', idx=0, **batch)
+            self.log_audio(partition='train', idx=0, **batch)
 
         else:
             # Log Stuff
-            self.log_spectrogram(**batch)
-            self.log_audio(**batch)
+            self.log_spectrogram(partition='val', idx=batch_idx, **batch)
+            self.log_audio(partition='val', idx=batch_idx,**batch)
             self.log_predictions(**batch)
 
 
-    def log_audio(self, wav, generated_wav, **batch):
+    def log_audio(self, wav, generated_wav, partition, idx, **batch):
         init_len = batch['initial_len'][0]
-        self.writer.add_audio("initial_wav", wav[0][:, :init_len], 22050)
-        self.writer.add_audio("generated_wav", generated_wav[0][:, :init_len], 22050)
+        if partition != 'val':
+            self.writer.add_audio("initial_wav", wav[0][:, :init_len], 22050)
+            self.writer.add_audio("generated_wav", generated_wav[0][:, :init_len], 22050)
+        else:
+            self.writer.add_audio(f"initial_wav_{idx}", wav[0][:, :init_len], 22050)
+            self.writer.add_audio(f"generated_wav_{idx}", generated_wav[0][:, :init_len], 22050)
 
-    def log_spectrogram(self, melspec, **batch):
-        spectrogram_for_plot = melspec[0].detach().cpu()
-        image = plot_spectrogram(spectrogram_for_plot)
-        self.writer.add_image("melspectrogram", image)
+
+    def log_spectrogram(self, melspec,  mel_spec_fake, partition, idx, **batch):
+        spectrogram_for_plot_real = melspec[0].detach().cpu()
+        spectrogram_for_plot_fake = mel_spec_fake[0].detach().cpu()
+        if partition != 'val':
+            image = plot_spectrogram(spectrogram_for_plot_real)
+            self.writer.add_image("melspectrogram_real", image)
+            image_fake = plot_spectrogram(spectrogram_for_plot_fake)
+            self.writer.add_image("melspectrogram_fake", image_fake)
+        else:
+            image = plot_spectrogram(spectrogram_for_plot_real)
+            self.writer.add_image("melspectrogram_real", image)
+            image_fake = plot_spectrogram(spectrogram_for_plot_fake)
+            self.writer.add_image("melspectrogram_fake", image_fake)
+
 
     def log_predictions(self, examples_to_log=10, **batch):
         all_wavs_generated = batch['generated_wav']

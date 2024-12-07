@@ -33,7 +33,7 @@ def collate_fn(dataset_items: list[dict]):
             max_len_wav = max(len(item['wav'].squeeze(0)), max_len_wav)
             max_len_spec =  max(item['melspec'].shape[-1], max_len_spec)
             initial_lens.append(item['wav'].shape[1])
-        if 'generated_text_melspec' in item.keys():
+        elif 'generated_text_melspec' in item.keys():
             predicted_melspecs.append(item['generated_text_melspec'])
             predicted_melspec_init_lens.append(item['generated_text_melspec'].shape[-1])
             max_predicted_melspec_init_lens = max(item['generated_text_melspec'].shape[-1], max_predicted_melspec_init_lens)
