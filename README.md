@@ -12,7 +12,6 @@
 ## About
 
 See the task assignment [here](https://github.com/markovka17/dla/tree/2024/hw3_nv).
-Authors: Vsevolod Kuybida, Polina Kadeyshvili, Anna Markovich
 
 ## Installation
 
