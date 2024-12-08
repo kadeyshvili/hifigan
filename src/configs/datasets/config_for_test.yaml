@@ -1,0 +1,5 @@
+test:
+  _target_: src.datasets.HiFiGanDataset
+  data_path: custom_data/wavs
+  limit: null
+  max_len: null

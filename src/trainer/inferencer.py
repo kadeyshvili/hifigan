@@ -127,8 +127,12 @@ class Inferencer(BaseTrainer):
         batch = self.move_batch_to_device(batch)
         batch = self.transform_batch(batch)  # transform batch on device -- faster
 
-        generated_wavs = self.model.generator(batch['generated_from_text_melspec'].squeeze(1))
+        if 'wav' not  in batch.keys():
+            generated_wavs = self.model.generator(batch['generated_from_text_melspec'].squeeze(1))
+        else:
+            generated_wavs = self.model.generator(batch['melspec'])
         batch['generated_wavs'] = generated_wavs
+
 
         if metrics is not None:
             for met in self.metrics["inference"]:
@@ -150,9 +154,9 @@ class Inferencer(BaseTrainer):
             if self.save_path is not None:
                 # you can use safetensors or other lib here
                 if path_to_save is not None:
-                    torchaudio.save(self.save_path / part /  f"{str(Path(path_to_save).stem)}.wav", generated_wavs, sample_rate=22050)
+                    torchaudio.save(self.save_path / part /  f"{str(Path(path_to_save).stem)}.wav", generated_wavs.detach().to(torch.device('cpu')), sample_rate=22050)
                 else:
-                    torchaudio.save(self.save_path / part /  "wav_from_text_from_console.wav", generated_wavs, sample_rate=22050)
+                    torchaudio.save(self.save_path / part /  "wav_from_text_from_console.wav", generated_wavs.detach().to(torch.device('cpu')), sample_rate=22050)
 
         return batch
 
@@ -190,3 +194,4 @@ class Inferencer(BaseTrainer):
                 )
 
         return self.evaluation_metrics.result()
+    
