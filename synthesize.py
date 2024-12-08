@@ -13,7 +13,7 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(version_base=None, config_path="src/configs", config_name="syntesize_from_text")
+@hydra.main(version_base=None, config_path="src/configs", config_name="synthesize_from_text")
 def main(config):
     """
     Main script for inference. Instantiates the model, metrics, and
