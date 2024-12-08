@@ -1,4 +1,4 @@
-# Automatic Speech Recognition (ASR) with PyTorch
+# Implementation of neural vocoder HiFi-GAN
 
 <p align="center">
   <a href="#about">About</a> •
@@ -8,11 +8,11 @@
   <a href="#license">License</a>
 </p>
 
+
 ## About
 
-This repository contains a template for solving ASR task with PyTorch. This template branch is a part of the [HSE DLA course](https://github.com/markovka17/dla) ASR homework. Some parts of the code are missing (or do not follow the most optimal design choices...) and students are required to fill these parts themselves (as well as writing their own models, etc.).
-
-See the task assignment [here](https://github.com/markovka17/dla/tree/2024/hw1_asr).
+See the task assignment [here](https://github.com/markovka17/dla/tree/2024/hw3_nv).
+Authors: Vsevolod Kuybida, Polina Kadeyshvili, Anna Markovich
 
 ## Installation
 
@@ -59,15 +59,46 @@ Follow these steps to install the project:
 To train a model, run the following command:
 
 ```bash
-python3 train.py -cn=CONFIG_NAME HYDRA_CONFIG_ARGUMENTS
+python3 train.py -cn=hifigan HYDRA_CONFIG_ARGUMENTS
 ```
 
-Where `CONFIG_NAME` is a config from `src/configs` and `HYDRA_CONFIG_ARGUMENTS` are optional arguments.
 
-To run inference (evaluate the model or save predictions):
+### How to reproduce the results of the best model (train)
+
+- to train your model use config *hifi_dataset* in configs specify path to audio files in *datasets.train.data_path=""  datasets.val.data_path=""*
+
+run the following command (fill in the paths to a data set):
 
 ```bash
-python3 inference.py HYDRA_CONFIG_ARGUMENTS
+python3 train.py -cn="hifigan" trainer.n_epochs=110 trainer.epoch_len=500 HYDRA_CONFIG_ARGUMENTS
+```
+
+## Link to pretrained HiFi-GAN model 
+[link](https://drive.google.com/file/d/17C3iA42W5fkoCyxZqO-Tu_-Z92IyBaMO/view?usp=sharing)
+
+## How to run synthesize
+- First you need to download pretrained model directly by following the link above or by running script that automatically downloads pretrained model. The pretrained model will be saved to scripts directory. To run script use the following commands
+
+```bash
+python3 scripts/download_weights.py
+```
+
+
+- To synthesize audios from inital wavs provide specify path to directory containing files with audios .wav  by using *datasets.test.data_path=""*  you need also provide path to pretrained model by specifying *inferencer.from_pretrained='path_to_your_model'*
+
+```bash
+python3 synthesize.py -cn="synthesize_from_wav"  HYDRA_CONFIG_ARGUMENTS
+```
+
+- If you want to synthesize audio from text from file .txt you need to specify path to directory containing files with text .txt *datasets.test.data_path=""*  you need also provide path to pretrained model by specifying *inferencer.from_pretrained='path_to_your_model'* Then you need to run the following command
+
+```bash
+python3 synthesize.py -cn="synthesize_from_text"  HYDRA_CONFIG_ARGUMENTS
+```
+- If you want to synthesize audio by typing in terminal you need to use *inferencer.text_from_console="your text"* you need also provide path to pretrained model by specifying *inferencer.from_pretrained='path_to_your_model'* Then you need to run the following command
+
+```bash
+python3 synthesize.py -cn="synthesize_from_text"  inferencer.text_from_console="your text" HYDRA_CONFIG_ARGUMENTS
 ```
 
 ## Credits

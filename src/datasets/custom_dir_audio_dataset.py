@@ -8,7 +8,7 @@ from speechbrain.inference.TTS import Tacotron2
 class CustomDirAudioDataset(BaseDataset):
     def __init__(self, data_path, text_from_console=None, *args, **kwargs):
         self.data = []
-        self.tacotron = Tacotron2.from_hparams(source="speechbrain/tts-tacotron2-ljspeech", savedir="tmpdir_tts")
+        self.tacotron = Tacotron2.from_hparams(source="speechbrain/tts-tacotron2-ljspeech", savedir="tmpdir_tts", overrides={"max_decoder_steps": 10000})
         if text_from_console is None:
             for path in Path(data_path).iterdir():
                 entry = {}

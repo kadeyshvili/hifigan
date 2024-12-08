@@ -12,7 +12,7 @@ comet_ml
 hydra-core
 transformers
 pytorch_lightning
-
+gdown
 black
 isort
 pre-commit
